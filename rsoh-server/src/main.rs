@@ -1,14 +1,22 @@
-#![feature(proc_macro_hygiene, decl_macro)]
+use actix_web::{web, App, HttpResponse, HttpServer, Responder};
 
-#[macro_use] extern crate rocket;
-
-#[get("/command")]
-fn index() -> &'static str {
-    // TODO: command input / DB
-    // only for PoC
-    "ls"
+async fn index() -> impl Responder {
+    HttpResponse::Ok().body("OK")
 }
 
-fn main() {
-    rocket::ignite().mount("/", routes![index]).launch();
+async fn command() -> impl Responder {
+    HttpResponse::Ok().body("ls")
+}
+
+
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| {
+        App::new()
+            .route("/", web::get().to(index))
+            .route("/command", web::get().to(command))
+    })
+    .bind("127.0.0.1:3137")?
+    .run()
+    .await
 }
